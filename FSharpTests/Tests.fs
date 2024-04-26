@@ -123,7 +123,7 @@ module ClusterPoolTests =
             let testKit = new Akka.TestKit.Xunit2.TestKit(system1, output)
             new Akka.TestKit.Xunit2.TestKit(system2, output) |> ignore
 
-            let echoActor (mailbox: Actor<string>) =
+            let echoActor testActor (mailbox: Actor<string>) =
                 let nodeAddress = Cluster.Get(mailbox.Context.System).SelfUniqueAddress
                 let rec loop () =
                     actor {
@@ -131,7 +131,7 @@ module ClusterPoolTests =
                         match msg with
                         | "ping" ->
                             logDebug mailbox $"Received ping on {nodeAddress} from {mailbox.Sender().Path}"
-                            testKit.TestActor <! "pong"
+                            testActor <! "pong"
                         | _ -> ()
                         return! loop ()
                     }
@@ -142,7 +142,7 @@ module ClusterPoolTests =
             cluster.RegisterOnMemberUp(fun () -> tcs.SetResult(Akka.Done.Instance))
             tcs.Task |> Async.AwaitTask |> Async.RunSynchronously |> ignore
 
-            let pool = spawnOpt system1 "echo" echoActor [ SpawnOption.Router(FromConfig.Instance) ]
+            let pool = spawnOpt system1 "echo" (echoActor testKit.TestActor) [ SpawnOption.Router(FromConfig.Instance) ]
 
             Async.Sleep 1000 |> Async.RunSynchronously
 
@@ -159,7 +159,7 @@ module ClusterPoolTests =
             let testKit = new Akka.TestKit.Xunit2.TestKit(system1, output)
             new Akka.TestKit.Xunit2.TestKit(system2, output) |> ignore
 
-            let echoActor (mailbox: Actor<string>) =
+            let echoActor testActor (mailbox: Actor<string>) =
                 let nodeAddress = Cluster.Get(mailbox.Context.System).SelfUniqueAddress
                 let rec loop () =
                     actor {
@@ -167,7 +167,7 @@ module ClusterPoolTests =
                         match msg with
                         | "ping" ->
                             logDebug mailbox $"Received ping on {nodeAddress} from {mailbox.Sender().Path}"
-                            testKit.TestActor <! "pong"
+                            testActor <! "pong"
                         | _ -> ()
                         return! loop ()
                     }
@@ -178,7 +178,7 @@ module ClusterPoolTests =
             cluster.RegisterOnMemberUp(fun () -> tcs.SetResult(Akka.Done.Instance))
             tcs.Task |> Async.AwaitTask |> Async.RunSynchronously |> ignore
 
-            let pool = spawnOpt system1 "echo" echoActor [ SpawnOption.Router(FromConfig.Instance) ]
+            let pool = spawnOpt system1 "echo" (echoActor testKit.TestActor) [ SpawnOption.Router(FromConfig.Instance) ]
 
             Async.Sleep 1000 |> Async.RunSynchronously
 
