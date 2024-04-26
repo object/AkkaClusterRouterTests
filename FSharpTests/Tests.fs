@@ -120,8 +120,8 @@ module ClusterPoolTests =
             let system1 = System.create "cluster-system-1" (configWithPortJsonSerializer 5010)
             let system2 = System.create "cluster-system-1" (configWithPortJsonSerializer 5011)
 
-            let testKit1 = new Akka.TestKit.Xunit2.TestKit(system1, output)
-            let testKit2 = new Akka.TestKit.Xunit2.TestKit(system2, output)
+            let testKit = new Akka.TestKit.Xunit2.TestKit(system1, output)
+            new Akka.TestKit.Xunit2.TestKit(system2, output) |> ignore
 
             let echoActor (mailbox: Actor<string>) =
                 let nodeAddress = Cluster.Get(mailbox.Context.System).SelfUniqueAddress
@@ -131,7 +131,7 @@ module ClusterPoolTests =
                         match msg with
                         | "ping" ->
                             logDebug mailbox $"Received ping on {nodeAddress} from {mailbox.Sender().Path}"
-                            testKit1.TestActor <! "pong"
+                            testKit.TestActor <! "pong"
                         | _ -> ()
                         return! loop ()
                     }
@@ -147,8 +147,8 @@ module ClusterPoolTests =
             Async.Sleep 1000 |> Async.RunSynchronously
 
             pool <! "ping"
-            testKit1.ReceiveN 2 |> ignore
-            testKit1.ExpectNoMsg
+            testKit.ReceiveN 2 |> ignore
+            testKit.ExpectNoMsg
 
         [<Fact>]
         member _.``Should broadcast message to all routees (Hyperion serializer)``() =
@@ -156,8 +156,8 @@ module ClusterPoolTests =
             let system1 = System.create "cluster-system-2" (configWithPortHyperionSerializer 5020)
             let system2 = System.create "cluster-system-2" (configWithPortHyperionSerializer 5021)
 
-            let testKit1 = new Akka.TestKit.Xunit2.TestKit(system1, output)
-            let testKit2 = new Akka.TestKit.Xunit2.TestKit(system2, output)
+            let testKit = new Akka.TestKit.Xunit2.TestKit(system1, output)
+            new Akka.TestKit.Xunit2.TestKit(system2, output) |> ignore
 
             let echoActor (mailbox: Actor<string>) =
                 let nodeAddress = Cluster.Get(mailbox.Context.System).SelfUniqueAddress
@@ -167,7 +167,7 @@ module ClusterPoolTests =
                         match msg with
                         | "ping" ->
                             logDebug mailbox $"Received ping on {nodeAddress} from {mailbox.Sender().Path}"
-                            testKit1.TestActor <! "pong"
+                            testKit.TestActor <! "pong"
                         | _ -> ()
                         return! loop ()
                     }
@@ -183,8 +183,8 @@ module ClusterPoolTests =
             Async.Sleep 1000 |> Async.RunSynchronously
 
             pool <! "ping"
-            testKit1.ReceiveN 2 |> ignore
-            testKit1.ExpectNoMsg
+            testKit.ReceiveN 2 |> ignore
+            testKit.ExpectNoMsg
 
     type ClusterGroupTests(output: ITestOutputHelper) =
 
@@ -246,8 +246,8 @@ module ClusterPoolTests =
             let system1 = System.create "cluster-system-3" (configWithPort 5030)
             let system2 = System.create "cluster-system-3" (configWithPort 5031)
 
-            let testKit1 = new Akka.TestKit.Xunit2.TestKit(system1, output)
-            let testKit2 = new Akka.TestKit.Xunit2.TestKit(system2, output)
+            let testKit = new Akka.TestKit.Xunit2.TestKit(system1, output)
+            new Akka.TestKit.Xunit2.TestKit(system2, output) |> ignore
 
             let echoActor (mailbox: Actor<string>) =
                 let nodeAddress = Cluster.Get(mailbox.Context.System).SelfUniqueAddress
@@ -257,7 +257,7 @@ module ClusterPoolTests =
                         match msg with
                         | "ping" ->
                             logDebug mailbox $"Received ping on {nodeAddress} from {mailbox.Sender().Path}"
-                            testKit1.TestActor <! "pong"
+                            testKit.TestActor <! "pong"
                         | _ -> ()
                         return! loop ()
                     }
@@ -275,5 +275,5 @@ module ClusterPoolTests =
             Async.Sleep 1000 |> Async.RunSynchronously
 
             group <! "ping"
-            testKit1.ReceiveN 2 |> ignore
-            testKit1.ExpectNoMsg
+            testKit.ReceiveN 2 |> ignore
+            testKit.ExpectNoMsg
